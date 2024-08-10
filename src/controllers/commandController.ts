@@ -5,9 +5,9 @@ import { decide } from '../business/Decide'
 
 export const buildCommand = (req: Request) => {
   const { id } = req.params;
-  const { name, price } = req.body;
+  const { name, price, quantity } = req.body;
   return {
-    POST: () => commands.createItem(id || '', name, parseFloat(price)),
+    POST: () => commands.createItem(id || '', name, parseFloat(price), parseInt(quantity)),
     PUT: () => commands.updateItem(id || '', name, parseFloat(price)),
     GET: () => commands.getById(id || ''),
     DELETE: () => commands.deleteItem(id || ''),
