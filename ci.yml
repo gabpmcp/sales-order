@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sales_order_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run Lint
+      run: npm run lint
+      continue-on-error: true
+      env:
+        CI: true
+
+    - name: Run Tests
+      env:
+        DATABASE_URL: postgres://postgres:password@localhost:5432/sales_order_db
+      run: npm test
+
+    - name: Build Docker Image
+      run: docker build -t myapp:latest .
+
+    - name: Run Docker Compose
+      run: docker-compose up --build -d
+
+    - name: Run Integration Tests
+      run: npm run test:integration
+      env:
+        DATABASE_URL: postgres://postgres:password@localhost:5432/sales_order_db
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage/
+
+    - name: Notify Slack on Failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
