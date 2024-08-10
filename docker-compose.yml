@@ -1,15 +1,6 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: sales_order_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
   api:
     build: .
     ports:
@@ -21,6 +12,25 @@ services:
       DB_USER: postgres
       DB_PASS: password
       DB_NAME: sales_order_db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sales_order_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
 volumes:
   db-data:
 
+networks:
+  app-network:
+    driver: bridge
