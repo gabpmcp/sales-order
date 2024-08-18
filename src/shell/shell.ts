@@ -1,5 +1,7 @@
 import { SaleOrderItem } from '../models/saleOrderItem'
 import { Event } from '../CQRS/CQRS'
+import { getExternalData } from './externalServices'
+import { Request, Response } from 'express'
 
 // Función pura: Encapsula la lógica de negocio
 const processEvent = (event: Event) => {
@@ -34,4 +36,14 @@ export const notifyEvent = async (event: Event) => {
   };
 
   return operations[operation] ? await operations[operation]() : { status: 500, message: 'Unknown operation' };
+}
+
+export const handleExternalRequest = (req: Request, res: Response) => {
+  getExternalData('/endpoint')
+    .then((res: Response) => (data: any) => {
+      return res.status(200).json({ message: 'Success', data });
+    })
+    .catch((res: Response) => (error: any) => {
+      return res.status(500).json({ message: 'Error fetching external data', error: error.message })
+    })
 }

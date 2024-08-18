@@ -193,6 +193,12 @@ const config = {
 
   // Whether to use watchman for file crawling
   // watchman: true,
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  testMatch: ['**/test/**/*.test.ts'],  // Cambia esta línea para que Jest busque en la carpeta 'test'
+  moduleFileExtensions: ['ts', 'js', 'json'],
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
 };
 
-module.exports = config;
+export default config;

@@ -1,20 +1,18 @@
-import { createItem } from '../commands/Commands';
-import * as fc from 'fast-check';
+import { decide } from '../src/Decide'
+import * as fc from 'fast-check'
 
-describe('Property-Based Tests for createItem', () => {
-  it('should always create valid items', () => {
+describe('Decide Property-Based Tests', () => {
+  it('should return a valid event for any command', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 3, maxLength: 30 }),
-        fc.float({ min: 0.01 }),
-        fc.integer({ min: 1 }),
-        (name, price, quantity) => {
-          const command = createItem('some-id', name, price, quantity);
-          if (command.kind === 'InvalidCommand') {
-            expect(command.payload.errors).toHaveLength(0); // Should not have errors
-          } else {
-            expect(command.kind).toBe('CreateItem');
-          }
+        fc.record({
+          kind: fc.constantFrom('CreateItem', 'UpdateItem', 'DeleteItem', 'GetById', 'InvalidCommand', 'UnsupportedCommand'),
+          payload: fc.anything(),
+        }),
+        (command) => {
+          const event = decide(command);
+          expect(event).toHaveProperty('kind');
+          expect(event).toHaveProperty('payload');
         }
       )
     )
