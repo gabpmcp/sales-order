@@ -1,4 +1,5 @@
-import { decide } from '../src/Decide'
+import { decide } from '../src/business/Decide'
+import { CommandError, CommandKind } from '../src/CQRS/CQRS'
 import * as fc from 'fast-check'
 
 describe('Decide Property-Based Tests', () => {
@@ -6,7 +7,7 @@ describe('Decide Property-Based Tests', () => {
     fc.assert(
       fc.property(
         fc.record({
-          kind: fc.constantFrom('CreateItem', 'UpdateItem', 'DeleteItem', 'GetById', 'InvalidCommand', 'UnsupportedCommand'),
+          kind: fc.constantFrom<CommandKind | CommandError>('CreateItem', 'UpdateItem', 'GetById', 'DeleteItem', 'InvalidCommand', 'UnsupportedCommand'),
           payload: fc.anything(),
         }),
         (command) => {
